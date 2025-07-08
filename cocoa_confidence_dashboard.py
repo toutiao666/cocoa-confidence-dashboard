@@ -1,32 +1,42 @@
-import matplotlib.pyplot as plt
-plt.rcParams['font.family'] = 'SimHei'  # 设置中文字体
-plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
+import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 
-# 时间轴设置
-dates = pd.date_range(start='2025-03-01', end='2026-03-01', freq='MS')
+# Make sure font works on Streamlit Cloud
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = ['Arial']
+plt.rcParams['axes.unicode_minus'] = False
+
+# Generate time points from March 2025 to March 2026
+dates = pd.date_range('2025-03-01', '2026-03-01', freq='MS')
 t = np.arange(len(dates))
 
-# 中位预测产量（假设逐步上修）
-mid_pred = 160 + 2 * np.sin(t / 3)
+# Simulated median forecast and confidence interval width
+mid = 160 + 2 * np.sin(t / 3)  # central estimate
+ci_width = 20 * np.exp(-0.2 * t)  # uncertainty narrows over time
+upper = mid + ci_width
+lower = mid - ci_width
 
-# 置信区间宽度（假设随时间收敛）
-ci_width = 20 * np.exp(-0.2 * t)
+# Streamlit layout
+st.title("📈 Cocoa 03 Contract: Forecast Confidence Dashboard")
+st.markdown(
+    "This tool visualizes how forecast confidence improves over time, "
+    "as uncertainty narrows and market information increases."
+)
 
-# 上下置信区间
-upper = mid_pred + ci_width
-lower = mid_pred - ci_width
+# Slider to select a time point
+idx = st.slider("Select forecast month", 0, len(dates) - 1, len(dates) - 1)
+st.metric("Median forecast", f"{mid[idx]:.1f} 10k tons")
+st.metric("95% Confidence Interval", f"{lower[idx]:.1f} – {upper[idx]:.1f} 10k tons")
 
-# 绘图
-plt.figure(figsize=(12, 6))
-plt.plot(dates, mid_pred, color='blue', label='中位预测产量')
-plt.fill_between(dates, lower, upper, color='blue', alpha=0.3, label='95%置信区间')
-plt.title('可可 03合约：2025-2026年 置信区间收敛模拟图')
-plt.xlabel('时间')
-plt.ylabel('预测产量（万吨）')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# Plot the chart
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(dates, mid, color='blue', label='Median forecast')
+ax.fill_between(dates, lower, upper, color='skyblue', alpha=0.3, label='95% Confidence Band')
+ax.axvline(dates[idx], color='red', linestyle='--', alpha=0.6)
+ax.set_title("Forecast Uncertainty Shrinks as Delivery Approaches")
+ax.set_ylabel("Forecasted Output (10,000 tons)")
+ax.grid(True)
+ax.legend()
+st.pyplot(fig)
