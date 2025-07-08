@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+plt.rcParams['font.family'] = 'SimHei'  # 设置中文字体
+plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
