@@ -1,5 +1,6 @@
-streamlit
+streamlit  
 matplotlib
 pandas
 numpy
 scipy
+pillow
